@@ -30,4 +30,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-Add GKE deployment and service YAML
+
