@@ -4,8 +4,8 @@ pipeline {
   environment {
     GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-sa-key')
     PROJECT_ID = 'sunny-cider-459704-j1'
-    CLUSTER_NAME = 'demok8cluster'       // Replace this
-    CLUSTER_ZONE = 'us-central1'           // Replace this
+    CLUSTER_NAME = 'demok8cluster'
+    CLUSTER_ZONE = 'us-central1'  // Or 'us-central1-a' if that's the specific zone
   }
 
   stages {
@@ -20,8 +20,8 @@ pipeline {
     stage('Push to Artifact Registry') {
       steps {
         sh '''
-          docker tag app:1.0 us-central1-docker.pkg.dev/	sunny-cider-459704-j1/democlass2/app:1.0
-          docker push us-central1-docker.pkg.dev/	sunny-cider-459704-j1/democlass2/app:1.0
+          docker tag app:1.0 us-central1-docker.pkg.dev/sunny-cider-459704-j1/democlass2/app:1.0
+          docker push us-central1-docker.pkg.dev/sunny-cider-459704-j1/democlass2/app:1.0
         '''
       }
     }
@@ -29,9 +29,10 @@ pipeline {
     stage('Connect to GKE') {
       steps {
         sh '''
-          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-          gcloud config set project sunny-cider-459704-j
-          gcloud container clusters get-credentials demok8cluster --zone 	us-central1
+          echo "$GOOGLE_APPLICATION_CREDENTIALS" > gcp-key.json
+          gcloud auth activate-service-account --key-file=gcp-key.json
+          gcloud config set project sunny-cider-459704-j1
+          gcloud container clusters get-credentials demok8cluster --zone us-central1
           kubectl get nodes
         '''
       }
