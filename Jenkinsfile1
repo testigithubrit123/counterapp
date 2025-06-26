@@ -1,1 +1,62 @@
+pipeline {
+  agent any
+
+  environment {
+    GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-sa-key') // This refers to a Jenkins credential ID
+    PROJECT_ID = 'sunny-cider-459704-j1'
+    CLUSTER_NAME = 'demok8cluster'
+    CLUSTER_ZONE = 'us-central1' // Replace with exact zone like 'us-central1-a' if needed
+    ARTIFACT_REPO = 'us-central1-docker.pkg.dev/sunny-cider-459704-j1/democlass2/app:1.0'
+  }
+
+  stages {
+    stage('Build Docker Image') {
+      steps {
+        sh '''
+          docker build -t app:1.0 .
+        '''
+      }
+    }
+
+    stage('Push to Artifact Registry') {
+      steps {
+        sh '''
+          docker tag app:1.0 $ARTIFACT_REPO
+          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+          docker push $ARTIFACT_REPO
+        '''
+      }
+    }
+
+    stage('Connect to GKE') {
+      steps {
+        sh '''
+          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+          gcloud config set project $PROJECT_ID
+          gcloud container clusters get-credentials $demok8cluster --zone $demok8cluster
+          kubectl get nodes
+        '''
+      }
+    }
+
+    stage('Deploy to GKE') {
+      steps {
+        sh '''
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+        '''
+      }
+    }
+
+    stage('Verify Deployment') {
+      steps {
+        sh '''
+          kubectl get pods
+          kubectl get svc
+        '''
+      }
+    }
+  }
+}
 
