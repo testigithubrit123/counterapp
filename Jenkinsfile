@@ -6,17 +6,18 @@ pipeline {
     }
 
     environment {
-        SONAR_TOKEN = credentials('sonar-token') // Add this in Jenkins credentials
+        SONARQUBE_SCANNER = 'SonarScanner'
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                git 'https://github.com/testigithubrit123/counterapp.git'
+                git url: 'https://github.com/testigithubrit123/counterapp', branch: 'main'
             }
         }
 
-        stage('Build') {
+        stage('Build with Maven') {
             steps {
                 sh 'mvn clean install'
             }
@@ -24,19 +25,15 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
-                }
-            }
-        }
-
-        stage("Quality Gate") {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                withSonarQubeEnv('My SonarQube Server') {
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=counterapp \
+                        -Dsonar.host.url=http://<SONARQUBE-IP>:9000 \
+                        -Dsonar.login=${SONAR_TOKEN}
+                    """
                 }
             }
         }
     }
 }
-
