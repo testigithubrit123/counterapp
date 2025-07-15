@@ -28,6 +28,7 @@ pipeline {
             sh """
                 mvn clean install jacoco:report sonar:sonar \
                 -Dsonar.projectKey=counterapp \
+                -Dsonar.sources=. \
                 -Dsonar.java.binaries=target/classes \
                 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
             """
