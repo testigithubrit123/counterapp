@@ -25,12 +25,14 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('My SonarQube Server') {
-                    sh """
-                        ${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.projectKey=counterapp \
-                        -Dsonar.sources=. \
-                        -Dsonar.java.binaries=target/classes
-                    """
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                            ${SONARQUBE_SCANNER}/bin/sonar-scanner \
+                              -Dsonar.projectKey=counterapp \
+                              -Dsonar.sources=. \
+                              -Dsonar.java.binaries=target/classes \
+                              -Dsonar.login=$SONAR_TOKEN
+                        """
                 }
             }
         }
