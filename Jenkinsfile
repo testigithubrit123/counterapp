@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        SONARQUBE_SCANNER = 'SonarScanner'
+        SONARQUBE_SCANNER = tool 'SonarScanner'
     }
 
     stages {
@@ -19,24 +19,25 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 sh 'mvn clean install'
-            }
+	           }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('My SonarQube Server') {
                     withCredentials([string(credentialsId: 'sonar-token1', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                            $SONARQUBE_SCANNER/bin/sonar-scanner \
+                        sh """
+                            ${SONARQUBE_SCANNER}/bin/sonar-scanner \
                             -Dsonar.projectKey=counterapp \
                             -Dsonar.sources=. \
                             -Dsonar.java.binaries=target/classes \
                             -Dsonar.login=$SONAR_TOKEN
-                        '''
+                        """
                     }
                 }
             }
         }
     }
 }
+
 
