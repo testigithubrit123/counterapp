@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.8.7'         // Use the Maven you configured
+        maven 'Maven 3.8.7'
     }
 
     environment {
-        SONAR_SCANNER_HOME = tool 'SonarScanner'  // Use the SonarScanner you configured
+        SONAR_SCANNER_HOME = tool 'SonarScanner'
     }
 
     stages {
@@ -22,19 +22,21 @@ pipeline {
             }
         }
 
-stage('SonarQube Analysis') {
-  steps {
-    withSonarQubeEnv('My SonarQube Server') {
-      sh '''
-        ${env.SONAR_SCANNER_HOME}/bin/sonar-scanner
-        -Dsonar.projectKey=counterapp \
-        -Dsonar.sources=. \
-        -Dsonar.java.binaries=target/classes
-      '''
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('My SonarQube Server') {
+                    sh """
+                        ${env.SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=counterapp \
+                        -Dsonar.sources=. \
+                        -Dsonar.java.binaries=target/classes \
+                        -Dsonar.host.url=http://34.134.220.246:9000
+                    """
+                }
+            }
+        }
     }
-  }
 }
-
 
         
     
