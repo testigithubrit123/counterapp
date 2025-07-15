@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        SONAR_SCANNER_HOME = tool 'SonarScanner'  // Register scanner path
+        SONARQUBE_SCANNER = 'SonarScanner'
     }
 
     stages {
@@ -25,13 +25,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('My SonarQube Server') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN')]) {
+                    withCredentials([string(credentialsId: 'sonar-token1', variable: 'SONAR_TOKEN')]) {
                         sh '''
-                            $SONAR_SCANNER_HOME/bin/sonar-scanner \
+                            $SONARQUBE_SCANNER/bin/sonar-scanner \
                             -Dsonar.projectKey=counterapp \
                             -Dsonar.sources=. \
                             -Dsonar.java.binaries=target/classes \
-                            -Dsonar.login=$TOKEN
+                            -Dsonar.login=$SONAR_TOKEN
                         '''
                     }
                 }
