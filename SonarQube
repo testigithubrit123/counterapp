@@ -23,20 +23,11 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            environment {
-                SONAR_TOKEN = credentials('sonar-token')  // Use the SonarQube token you stored
-            }
-            steps {
-                withSonarQubeEnv('My SonarQube Server') {
-                    sh '''
-                        ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
-                          -Dsonar.projectKey=counterapp \
-                          -Dsonar.sources=. \
-                          -Dsonar.host.url=http://34.134.220.246:9000 \
-                          -Dsonar.login=$SONAR_TOKEN
-                    '''
-                }
-            }
+    steps {
+        withSonarQubeEnv('My SonarQube Server') {
+            sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner"
         }
     }
 }
+
+                
