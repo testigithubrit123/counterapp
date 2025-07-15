@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.8.7'         // Use the Maven you configured
+    }
+
+    environment {
+        SONAR_SCANNER_HOME = tool 'SonarScanner'  // Use the SonarScanner you configured
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'github1_credential18', url: 'https://github.com/testigithubrit123/counterapp', branch: 'main'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            environment {
+                SONAR_TOKEN = credentials('sonar-token')  // Use the SonarQube token you stored
+            }
+            steps {
+                withSonarQubeEnv('My SonarQube Server') {
+                    sh '''
+                        ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                          -Dsonar.projectKey=counterapp \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=http://34.134.220.246:9000 \
+                          -Dsonar.login=$SONAR_TOKEN
+                    '''
+                }
+            }
+        }
+    }
+}
