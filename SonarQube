@@ -26,7 +26,7 @@ stage('SonarQube Analysis') {
   steps {
     withSonarQubeEnv('My SonarQube Server') {
       sh '''
-        $SONAR_SCANNER_HOME/bin/sonar-scanner \
+        ${env.SONAR_SCANNER_HOME}/bin/sonar-scanner
         -Dsonar.projectKey=counterapp \
         -Dsonar.sources=. \
         -Dsonar.java.binaries=target/classes
