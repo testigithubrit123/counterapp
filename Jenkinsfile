@@ -19,6 +19,7 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 sh 'mvn clean install'
+		    sh 'mvn test'  // This will trigger JaCoCo to generate coverage reports
 	           }
         }
 
