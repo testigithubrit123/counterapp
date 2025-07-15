@@ -34,6 +34,12 @@ pipeline {
                             -Dsonar.java.binaries=target/classes \
                             -Dsonar.login=$SONAR_TOKEN
                         """
+			    stage('Test & Code Coverage') {
+                            steps {
+                             sh 'mvn verify'
+                        }
+                       }
+
                     }
                 }
             }
