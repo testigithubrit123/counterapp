@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: counterapp-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: counterapp
@@ -13,7 +13,7 @@ spec:
         app: counterapp
     spec:
       containers:
-      - name: counterapp
-        image: us-central1-docker.pkg.dev/sunny-cider-459704-j1/democlass2/app:1.0
-        ports:
-        - containerPort: 8080
+        - name: counterapp
+          image: vbadiger/counterapp:latest
+          ports:
+            - containerPort: 8080
