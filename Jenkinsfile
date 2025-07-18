@@ -1,50 +1,61 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven 3.8.7'
-    }
-
     environment {
-        SONARQUBE_SCANNER = tool 'SonarScanner'
+        PROJECT_ID = 'your-gcp-project-id'
+        CLUSTER = 'your-cluster-name'
+        ZONE = 'us-central1-a'
+        DOCKER_IMAGE = 'dockerhub-username/counterapp'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/testigithubrit123/counterapp', branch: 'main'
+                git 'https://github.com/testigithubrit123/counterapp.git'
             }
         }
 
-        stage('Build with Maven') {
+        stage('Auth GCP') {
             steps {
-                sh 'mvn clean install'
-		    sh 'mvn test'  // This will trigger JaCoCo to generate coverage reports
-	           }
+                withCredentials([file(credentialsId: 'gcp-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    sh '''
+                      gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+                      gcloud config set project $PROJECT_ID
+                      gcloud container clusters get-credentials $CLUSTER --zone $ZONE
+                    '''
+                }
+            }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Build Docker Image') {
             steps {
-                withSonarQubeEnv('My SonarQube Server') {
-                    withCredentials([string(credentialsId: 'sonar-token1', variable: 'SONAR_TOKEN')]) {
-                        sh """
-                            ${SONARQUBE_SCANNER}/bin/sonar-scanner \
-                            -Dsonar.projectKey=counterapp \
-                            -Dsonar.sources=. \
-                            -Dsonar.java.binaries=target/classes \
-                            -Dsonar.login=$SONAR_TOKEN
-                        """
-			    stage('Test & Code Coverage') {
-                            steps {
-                             sh 'mvn verify'
-                        }
-                       }
+                script {
+                    docker.build("${DOCKER_IMAGE}:latest")
+                }
+            }
+        }
 
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        sh "docker push ${DOCKER_IMAGE}:latest"
                     }
                 }
             }
         }
+
+        stage('Deploy to GKE') {
+            steps {
+                sh '''
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+                '''
+            }
+        }
     }
 }
+
 
 
