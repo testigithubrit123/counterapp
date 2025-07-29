@@ -1,19 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: counterapp-deployment
+  name: petclinic-deployment
+  labels:
+    app: petclinic
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: counterapp
+      app: petclinic
   template:
     metadata:
       labels:
-        app: counterapp
+        app: petclinic
     spec:
       containers:
-        - name: counterapp
-          image: vbadiger/counterapp:latest
-          ports:
-            - containerPort: 8080
+      - name: petclinic
+        image: vinayakbadiger/petclinic:latest
+        ports:
+        - containerPort: 8080
